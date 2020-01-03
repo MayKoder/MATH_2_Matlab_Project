@@ -7,7 +7,6 @@ function [a,u] = rotMat2Eaa(R)
 %	a: angle of rotation
 %	u: axis of rotation 
 
-
 %Return angle in rads
 preAngle = (trace(R)-1)/2;
 

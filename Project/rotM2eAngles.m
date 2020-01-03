@@ -29,8 +29,6 @@ else
     roll = atan2d((local_R(3, 2) / cos(pitch)), ((local_R(3, 3) / cos(pitch)))); 
     
 end
-
-
 end
 
 

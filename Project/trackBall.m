@@ -636,4 +636,3 @@ function reset_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 R=eye(3);
 handles.Cube=RedrawCube(R,handles);
-UpdateRotMat(handles,R);

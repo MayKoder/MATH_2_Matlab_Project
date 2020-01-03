@@ -120,6 +120,20 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
 
     %%% DO things
     % use with the proper R matrix to rotate the cube
+    
+    converVector = zeros(3, 1);
+    r = sqrt(3);
+    if power(xmouse, 2) + power(ymouse, 2) < power(r, 2)
+        
+        converVector = [xmouse; ymouse; sqrt(power(r, 2) - power(xmouse, 2) - power(ymouse, 2))];
+        
+    else 
+        
+        
+        
+    end
+    
+    
     R = [1 0 0; 0 -1 0;0 0 -1];
     handles.Cube = RedrawCube(R,handles.Cube);
     

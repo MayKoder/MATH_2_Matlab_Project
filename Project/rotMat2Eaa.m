@@ -13,7 +13,7 @@ preAngle = (trace(R)-1)/2;
 
 %Make sure angle is between -1 and 1
 if preAngle >= -1 && preAngle <= 1
-    a=acos((trace(R)-1)/2);
+    a=acosd((trace(R)-1)/2);
 else
     a = 0;
 end

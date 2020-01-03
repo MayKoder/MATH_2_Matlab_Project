@@ -22,7 +22,7 @@ function varargout = trackBall(varargin)
 
 % Edit the above text to modify the response to help trackBall
 
-% Last Modified by GUIDE v2.5 03-Jan-2020 18:09:15
+% Last Modified by GUIDE v2.5 03-Jan-2020 20:15:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -124,19 +124,13 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     if xmouse^2 + ymouse^2 < 0.5 * power(r, 2)
 
         converVector = [xmouse; ymouse; sqrt(r^2 - xmouse^2 - ymouse^2)];
-
     else 
-
         vecModule = norm([xmouse, ymouse, (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]);
         converVector = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
-
     end
-
-
     R = Eaa2rotMat(10, converVector);
-    handles.Cube = RedrawCube(R,handles.Cube);
-   
-    
+    handles.Cube = RedrawCube(R,handles);
+      
 end
 guidata(hObject,handles);
 
@@ -185,7 +179,7 @@ end
 
 function h = RedrawCube(R,hin)
 
-h = hin;
+h = hin.Cube;
 c = 1/255*[255 248 88;
     0 0 0;
     57 183 225;
@@ -225,6 +219,12 @@ for q = 1:6
     h(q).Vertices = [x(:,q) y(:,q) z(:,q)];
     h(q).FaceColor = c(q,:);
 end
+
+UpdateRotMat(hin,R);
+UpdateEA(hin,R);
+UpdateRotVec(hin,R);
+UpdateEAA(hin,R);
+UpdateQuaternion(hin,R);
 
 
 
@@ -509,18 +509,18 @@ function vec_rot_Callback(hObject, eventdata, handles)
 
 
 
-function phi_Callback(hObject, eventdata, handles)
-% hObject    handle to phi (see GCBO)
+function yaw_Callback(hObject, eventdata, handles)
+% hObject    handle to yaw (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of phi as text
-%        str2double(get(hObject,'String')) returns contents of phi as a double
+% Hints: get(hObject,'String') returns contents of yaw as text
+%        str2double(get(hObject,'String')) returns contents of yaw as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function phi_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to phi (see GCBO)
+function yaw_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to yaw (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -532,18 +532,18 @@ end
 
 
 
-function theta_Callback(hObject, eventdata, handles)
-% hObject    handle to theta (see GCBO)
+function pitch_Callback(hObject, eventdata, handles)
+% hObject    handle to pitch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of theta as text
-%        str2double(get(hObject,'String')) returns contents of theta as a double
+% Hints: get(hObject,'String') returns contents of pitch as text
+%        str2double(get(hObject,'String')) returns contents of pitch as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function theta_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to theta (see GCBO)
+function pitch_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pitch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -555,18 +555,18 @@ end
 
 
 
-function psi_Callback(hObject, eventdata, handles)
-% hObject    handle to psi (see GCBO)
+function roll_Callback(hObject, eventdata, handles)
+% hObject    handle to roll (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of psi as text
-%        str2double(get(hObject,'String')) returns contents of psi as a double
+% Hints: get(hObject,'String') returns contents of roll as text
+%        str2double(get(hObject,'String')) returns contents of roll as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function psi_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to psi (see GCBO)
+function roll_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to roll (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -582,3 +582,58 @@ function angles_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to angles_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+    
+
+
+%---------------------Reset & Update Functions------------------
+
+function UpdateRotMat(handles,rot_mat)
+set(handles.mat_11,'String',rot_mat(1,1));
+set(handles.mat_12,'String',rot_mat(1,2));
+set(handles.mat_13,'String',rot_mat(1,3));
+set(handles.mat_21,'String',rot_mat(2,1));
+set(handles.mat_22,'String',rot_mat(2,2));
+set(handles.mat_23,'String',rot_mat(2,3));
+set(handles.mat_31,'String',rot_mat(3,1));
+set(handles.mat_32,'String',rot_mat(3,2));
+set(handles.mat_33,'String',rot_mat(3,3));
+
+function UpdateQuaternion(handles,rot_mat)
+quaternion=rotM2Quat(rot_mat);
+set(handles.q_0,'String',quaternion(1));
+set(handles.q_1,'String',quaternion(2));
+set(handles.q_2,'String',quaternion(3));
+set(handles.q_3,'String',quaternion(4));
+
+function UpdateEAA(handles,rot_mat)
+[euler_angle,euler_axis]=rotMat2Eaa(rot_mat);
+set(handles.eu_angle,'String',euler_angle);
+set(handles.eu_x,'String',euler_axis(1));
+set(handles.eu_y,'String',euler_axis(2));
+set(handles.eu_z,'String',euler_axis(3));
+
+function UpdateRotVec(handles,rot_mat)
+r_vec=rotM2rotVec(rot_mat);
+set(handles.vec_x,'String',r_vec(1));
+set(handles.vec_y,'String',r_vec(2));
+set(handles.vec_z,'String',r_vec(3));
+
+function UpdateEA(handles,rot_mat)
+[y,p,r]=rotM2eAngles(rot_mat);
+set(handles.yaw,'String',y);
+set(handles.pitch,'String',p);
+set(handles.roll,'String',r);
+
+
+
+
+
+% --- Executes on button press in reset.
+function reset_Callback(hObject, eventdata, handles)
+% hObject    handle to reset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+R=eye(3);
+handles.Cube=RedrawCube(R,handles);
+UpdateRotMat(handles,R);

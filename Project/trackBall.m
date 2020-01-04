@@ -324,6 +324,15 @@ function q_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to q_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+q=zeros(1,4);
+q(1)=str2double(get(handles.q_0,'String'));
+q(2)=str2double(get(handles.q_1,'String'));
+q(3)=str2double(get(handles.q_2,'String'));
+q(4)=str2double(get(handles.q_3,'String'));
+
+R= rotQua2M(q);
+handles.Cube=RedrawCube(R,handles);
+
 
 
 
@@ -331,6 +340,15 @@ function eu_angle_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_angle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+a= str2double(get(handles.eu_angle,'String'));
+u=zeros(3,1);
+u(1)= str2double(get(handles.eu_x,'String'));
+u(2)= str2double(get(handles.eu_y,'String'));
+u(3)= str2double(get(handles.eu_z,'String'));
+
+R=Eaa2rotMat(a,u);
+handles.Cube=RedrawCube(R,handles);
+
 
 % Hints: get(hObject,'String') returns contents of eu_angle as text
 %        str2double(get(hObject,'String')) returns contents of eu_angle as a double
@@ -425,11 +443,16 @@ function eu_rot_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
+
+
+
+
 % --- Executes on button press in mat_rot.
 function mat_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to mat_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 
 
 
@@ -507,6 +530,16 @@ function vec_rot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+vec=zeros(3,1);
+vec(1)=str2double(get(handles.vec_x,'String'));
+vec(2)=str2double(get(handles.vec_y,'String'));
+vec(3)=str2double(get(handles.vec_z,'String'));
+
+R=rotVec2rotMat(vec);
+handles.Cube=RedrawCube(R,handles);
+
+
+
 
 
 function yaw_Callback(hObject, eventdata, handles)
@@ -582,7 +615,12 @@ function angles_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to angles_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+yaw=str2double(get(handles.yaw,'String'));
+pitch=str2double(get(handles.pitch,'String'));
+roll=str2double(get(handles.roll,'String'));
 
+R=eAngles2rotM(yaw,pitch,roll);
+handles.Cube=RedrawCube(R,handles);
     
 
 

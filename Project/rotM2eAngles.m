@@ -18,15 +18,15 @@ if abs(R(3, 1)) == 1
         pitch = 270;
     end    
     
-    roll = atan2d((local_R(3, 2) / cos(pitch)), ((local_R(3, 3) / cos(pitch))));
+    roll = atan2d((local_R(3, 2) / cosd(pitch)), ((local_R(3, 3) / cosd(pitch))));
     
     
 else
     
     pitch = asind(-R(3, 1));
 
-    yaw = atan2d((local_R(2, 1) / cos(pitch)), ((local_R(1, 1) / cos(pitch))));
-    roll = atan2d((local_R(3, 2) / cos(pitch)), ((local_R(3, 3) / cos(pitch)))); 
+    yaw = atan2d((local_R(2, 1) / cosd(pitch)), ((local_R(1, 1) / cosd(pitch))));
+    roll = atan2d((local_R(3, 2) / cosd(pitch)), ((local_R(3, 3) / cosd(pitch)))); 
     
 end
 end

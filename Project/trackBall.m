@@ -128,7 +128,7 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
         vecModule = norm([xmouse, ymouse, (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]);
         converVector = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
     end
-    R = Eaa2rotMat(10, converVector);
+    R = Eaa2rotMat(1, converVector);
     handles.Cube = RedrawCube(R,handles);
       
 end

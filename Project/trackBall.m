@@ -70,8 +70,10 @@ set(handles.axes1,'xlim',[-3 3],'ylim',[-3 3],'visible','off','color','none');
 % Choose default command line output for trackBall
 handles.output = hObject;
 
-%Set initial rot quat as global
-SetVariableGlobal_rot_quat([1;0;0;0]);
+%Global var initialitzation
+global old_quat;
+old_quat = [1;0;0;0];
+SetVariableGlobal_old_rot([1;0;0;0]);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -114,6 +116,18 @@ guidata(hObject,handles)
 function my_MouseReleaseFcn(obj,event,hObject)
 handles=guidata(hObject);
 set(handles.figure1,'WindowButtonMotionFcn','');
+
+global old_quat;
+global old_rot;
+
+ %rota_quat * old_rota_quat
+ q = old_quat;
+ p = old_rot;
+    
+ r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
+    
+SetVariableGlobal_old_rot(r_quat);
+
 guidata(hObject,handles);
 
 function my_MouseMoveFcn(obj,event,hObject)
@@ -135,7 +149,11 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     % Get the previously stored mouse position x-y
     m_x = GetVariableGlobal_xclick;
     m_y = GetVariableGlobal_yclick;
-   
+    
+    %Start calculating the next rotation-------
+    global old_quat;
+    global old_rot;
+    
     %Old pos
      if((m_x^2 + m_y^2) < 0.5 * r^2)
         i_vect = [m_x; m_y; sqrt(r^2 - m_x^2 - m_y^2)];
@@ -155,19 +173,19 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     r_axis = cross(i_vect, f_vect) / norm(cross(i_vect, f_vect)); % Get rotation axis
     r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)))
 
-    old_rotation_quaternion = GetVariableGlobal_rot_quat;
     rotation_quaternion = [cos(r_angle/2);sin(r_angle/2)* r_axis];
     
     %rota_quat * old_rota_quat
     q = rotation_quaternion;
-    p = old_rotation_quaternion;
+    p = old_rot;
     
     r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
     
-    SetVariableGlobal_rot_quat(rotation_quaternion);
+
+    %R = rotQua2M(r_quat);
     R = rotQua2M(r_quat);
     handles.Cube = RedrawCube(R,handles);
-    
+    old_quat =  rotation_quaternion;
 end
 guidata(hObject,handles);
 
@@ -367,6 +385,8 @@ q(2)=str2double(get(handles.q_1,'String'));
 q(3)=str2double(get(handles.q_2,'String'));
 q(4)=str2double(get(handles.q_3,'String'));
 
+SetVariableGlobal_old_rot(q');
+
 R= rotQua2M(q);
 handles.Cube=RedrawCube(R,handles);
 
@@ -384,6 +404,7 @@ u(2)= str2double(get(handles.eu_y,'String'));
 u(3)= str2double(get(handles.eu_z,'String'));
 
 R=Eaa2rotMat(a,u);
+SetVariableGlobal_old_rot(rotM2Quat(R));
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -573,6 +594,9 @@ vec(2)=str2double(get(handles.vec_y,'String'));
 vec(3)=str2double(get(handles.vec_z,'String'));
 
 R=rotVec2rotMat(vec);
+
+SetVariableGlobal_old_rot(rotM2Quat(R));
+
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -657,6 +681,7 @@ pitch=str2double(get(handles.pitch,'String'));
 roll=str2double(get(handles.roll,'String'));
 
 R=eAngles2rotM(yaw,pitch,roll);
+SetVariableGlobal_old_rot(rotM2Quat(R));
 handles.Cube=RedrawCube(R,handles);
     
 
@@ -701,16 +726,17 @@ set(handles.pitch,'String',p);
 set(handles.roll,'String',r);
 
 
-
-
-
 % --- Executes on button press in reset.
 function reset_Callback(hObject, eventdata, handles)
 % hObject    handle to reset (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 R=eye(3);
-SetVariableGlobal_rot_quat([1;0;0;0]);
+
+global old_quat;
+old_quat = [1;0;0;0];
+SetVariableGlobal_old_rot([1;0;0;0]);
+
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -730,14 +756,15 @@ function SetVariableGlobal_yclick(variable)
 function r = GetVariableGlobal_yclick
     global yclick;
     r = yclick;
+  
+function SetVariableGlobal_old_rot(variable)
+    global old_rot;
+    old_rot = variable;
     
-%Quaternion
-function SetVariableGlobal_rot_quat(variable)
-    global rot_quat;
-    rot_quat = variable;
+function r = GetVariableGlobal_old_rot
+    global old_rot;
+    r = old_rot;
     
-function r = GetVariableGlobal_rot_quat
-    global rot_quat;
-    r = rot_quat;
+    
     
     

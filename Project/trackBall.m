@@ -171,7 +171,7 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     end
 
     r_axis = cross(i_vect, f_vect) / norm(cross(i_vect, f_vect)); % Get rotation axis
-    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)))
+    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)));
 
     rotation_quaternion = [cos(r_angle/2);sin(r_angle/2)* r_axis];
     
@@ -181,8 +181,6 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     
     r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
     
-
-    %R = rotQua2M(r_quat);
     R = rotQua2M(r_quat);
     handles.Cube = RedrawCube(R,handles);
     old_quat =  rotation_quaternion;
@@ -287,7 +285,6 @@ function q_0_Callback(hObject, eventdata, handles)
 % hObject    handle to q_0 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_0 as text
 %        str2double(get(hObject,'String')) returns contents of q_0 as a double
 
@@ -310,7 +307,6 @@ function q_1_Callback(hObject, eventdata, handles)
 % hObject    handle to q_1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_1 as text
 %        str2double(get(hObject,'String')) returns contents of q_1 as a double
 
@@ -333,7 +329,6 @@ function q_2_Callback(hObject, eventdata, handles)
 % hObject    handle to q_2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_2 as text
 %        str2double(get(hObject,'String')) returns contents of q_2 as a double
 
@@ -356,7 +351,6 @@ function q_3_Callback(hObject, eventdata, handles)
 % hObject    handle to q_3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_3 as text
 %        str2double(get(hObject,'String')) returns contents of q_3 as a double
 
@@ -397,17 +391,6 @@ function eu_angle_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_angle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-a= str2double(get(handles.eu_angle,'String'));
-u=zeros(3,1);
-u(1)= str2double(get(handles.eu_x,'String'));
-u(2)= str2double(get(handles.eu_y,'String'));
-u(3)= str2double(get(handles.eu_z,'String'));
-
-R=Eaa2rotMat(a,u);
-SetVariableGlobal_old_rot(rotM2Quat(R));
-handles.Cube=RedrawCube(R,handles);
-
-
 % Hints: get(hObject,'String') returns contents of eu_angle as text
 %        str2double(get(hObject,'String')) returns contents of eu_angle as a double
 
@@ -430,7 +413,6 @@ function eu_x_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_x (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_x as text
 %        str2double(get(hObject,'String')) returns contents of eu_x as a double
 
@@ -453,7 +435,6 @@ function eu_y_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_y (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_y as text
 %        str2double(get(hObject,'String')) returns contents of eu_y as a double
 
@@ -476,7 +457,6 @@ function eu_z_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_z (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_z as text
 %        str2double(get(hObject,'String')) returns contents of eu_z as a double
 
@@ -499,7 +479,15 @@ function eu_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+a= str2double(get(handles.eu_angle,'String'));
+u=zeros(3,1);
+u(1)= str2double(get(handles.eu_x,'String'));
+u(2)= str2double(get(handles.eu_y,'String'));
+u(3)= str2double(get(handles.eu_z,'String'));
 
+R=Eaa2rotMat(a,u);
+SetVariableGlobal_old_rot(rotM2Quat(R));
+handles.Cube=RedrawCube(R,handles);
 
 
 
@@ -518,7 +506,6 @@ function vec_x_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_x (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_x as text
 %        str2double(get(hObject,'String')) returns contents of vec_x as a double
 
@@ -541,7 +528,6 @@ function vec_y_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_y (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_y as text
 %        str2double(get(hObject,'String')) returns contents of vec_y as a double
 
@@ -564,7 +550,6 @@ function vec_z_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_z (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_z as text
 %        str2double(get(hObject,'String')) returns contents of vec_z as a double
 
@@ -607,7 +592,6 @@ function yaw_Callback(hObject, eventdata, handles)
 % hObject    handle to yaw (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of yaw as text
 %        str2double(get(hObject,'String')) returns contents of yaw as a double
 
@@ -630,7 +614,6 @@ function pitch_Callback(hObject, eventdata, handles)
 % hObject    handle to pitch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of pitch as text
 %        str2double(get(hObject,'String')) returns contents of pitch as a double
 
@@ -653,7 +636,6 @@ function roll_Callback(hObject, eventdata, handles)
 % hObject    handle to roll (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of roll as text
 %        str2double(get(hObject,'String')) returns contents of roll as a double
 

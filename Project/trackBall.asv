@@ -287,7 +287,6 @@ function q_0_Callback(hObject, eventdata, handles)
 % hObject    handle to q_0 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_0 as text
 %        str2double(get(hObject,'String')) returns contents of q_0 as a double
 
@@ -397,19 +396,6 @@ function eu_angle_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_angle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-a= str2double(get(handles.eu_angle,'String'));
-u=zeros(3,1);
-u(1)= str2double(get(handles.eu_x,'String'));
-u(2)= str2double(get(handles.eu_y,'String'));
-u(3)= str2double(get(handles.eu_z,'String'));
-
-R=Eaa2rotMat(a,u);
-
-SetVariableGlobal_old_rot(rotM);
-
-handles.Cube=RedrawCube(R,handles);
-
-
 % Hints: get(hObject,'String') returns contents of eu_angle as text
 %        str2double(get(hObject,'String')) returns contents of eu_angle as a double
 
@@ -432,7 +418,6 @@ function eu_x_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_x (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_x as text
 %        str2double(get(hObject,'String')) returns contents of eu_x as a double
 
@@ -455,7 +440,6 @@ function eu_y_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_y (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_y as text
 %        str2double(get(hObject,'String')) returns contents of eu_y as a double
 
@@ -478,7 +462,6 @@ function eu_z_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_z (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of eu_z as text
 %        str2double(get(hObject,'String')) returns contents of eu_z as a double
 
@@ -501,7 +484,15 @@ function eu_rot_Callback(hObject, eventdata, handles)
 % hObject    handle to eu_rot (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+a= str2double(get(handles.eu_angle,'String'));
+u=zeros(3,1);
+u(1)= str2double(get(handles.eu_x,'String'));
+u(2)= str2double(get(handles.eu_y,'String'));
+u(3)= str2double(get(handles.eu_z,'String'));
 
+R=Eaa2rotMat(a,u);
+SetVariableGlobal_old_rot(rotM2Quat(R));
+handles.Cube=RedrawCube(R,handles);
 
 
 
@@ -520,7 +511,6 @@ function vec_x_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_x (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_x as text
 %        str2double(get(hObject,'String')) returns contents of vec_x as a double
 
@@ -596,6 +586,9 @@ vec(2)=str2double(get(handles.vec_y,'String'));
 vec(3)=str2double(get(handles.vec_z,'String'));
 
 R=rotVec2rotMat(vec);
+
+SetVariableGlobal_old_rot(rotM2Quat(R));
+
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -680,6 +673,7 @@ pitch=str2double(get(handles.pitch,'String'));
 roll=str2double(get(handles.roll,'String'));
 
 R=eAngles2rotM(yaw,pitch,roll);
+SetVariableGlobal_old_rot(rotM2Quat(R));
 handles.Cube=RedrawCube(R,handles);
     
 

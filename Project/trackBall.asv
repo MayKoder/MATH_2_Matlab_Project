@@ -72,6 +72,7 @@ handles.output = hObject;
 
 %Set initial rot quat as global
 SetVariableGlobal_rot_quat([1;0;0;0]);
+SetVariableGlobal_M0(eye(3));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -100,7 +101,7 @@ xmouse = mousepos(1,1);
 ymouse = mousepos(1,2);
 
 if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
-
+    
     set(handles.figure1,'WindowButtonMotionFcn',{@my_MouseMoveFcn,hObject});
     
     x_click = xmouse;
@@ -114,6 +115,7 @@ guidata(hObject,handles)
 function my_MouseReleaseFcn(obj,event,hObject)
 handles=guidata(hObject);
 set(handles.figure1,'WindowButtonMotionFcn','');
+    
 guidata(hObject,handles);
 
 function my_MouseMoveFcn(obj,event,hObject)
@@ -151,10 +153,17 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
         vecModule = norm([xmouse, ymouse, (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]);
         f_vect = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
     end
-
+    
     r_axis = cross(i_vect, f_vect) / norm(cross(i_vect, f_vect)); % Get rotation axis
-    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)))
+    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)));
 
+    new_angle = r_angle;
+    old_angle = GetVariableGlobal_Angle;
+    SetVariableGlobal_Angle(new_angle);
+    
+    a = new_angle - old_angle
+
+    
     old_rotation_quaternion = GetVariableGlobal_rot_quat;
     rotation_quaternion = [cos(r_angle/2);sin(r_angle/2)* r_axis];
     
@@ -165,7 +174,12 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
     
     SetVariableGlobal_rot_quat(rotation_quaternion);
-    R = rotQua2M(r_quat);
+    R = Eaa2rotMat(a, r_quat/();
+    R = R * GetVariableGlobal_M0;
+
+    
+    SetVariableGlobal_M0(R);
+    
     handles.Cube = RedrawCube(R,handles);
     
 end
@@ -710,7 +724,6 @@ function reset_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 R=eye(3);
-SetVariableGlobal_rot_quat([1;0;0;0]);
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -740,4 +753,21 @@ function r = GetVariableGlobal_rot_quat
     global rot_quat;
     r = rot_quat;
     
+%Test
+function SetVariableGlobal_M0(variable)
+    global mo;
+    mo = variable;
+    
+function r = GetVariableGlobal_M0
+    global mo;
+    r = mo;
+    
+%Test 2
+function SetVariableGlobal_Angle(variable)
+    global angle;
+    angle = variable;
+    
+function r = GetVariableGlobal_Angle
+    global angle;
+    r = angle;
     

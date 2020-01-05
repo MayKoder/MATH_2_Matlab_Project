@@ -23,7 +23,7 @@ test = (R-R.');
 if test == zeros(length(R), length(R))
     u = [1; 1; 1] / sqrt(3);
 else
-    mat2=(test/(2*sin(a)));
+    mat2=(test/(2*sind(a)));
     
     %Return u axis
     u=[-mat2(2,3);mat2(1,3);-mat2(1,2)];

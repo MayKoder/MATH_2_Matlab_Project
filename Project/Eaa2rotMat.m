@@ -11,8 +11,8 @@ function [R] = Eaa2rotMat(a,u)
 u = u/ norm(u);
 
 len = length(u);
-s_cos =cos(a);
-s_sen =sin(a);
+s_cos =cosd(a);
+s_sen =sind(a);
 
 I = eye(len);
 uuT = u * transpose(u);

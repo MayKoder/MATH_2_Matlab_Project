@@ -57,8 +57,8 @@ set(hObject,'WindowButtonDownFcn',{@my_MouseClickFcn,handles.axes1});
 set(hObject,'WindowButtonUpFcn',{@my_MouseReleaseFcn,handles.axes1});
 axes(handles.axes1);
 
-handles.Cube=DrawCube(eye(3));
 
+handles.Cube=DrawCube(eye(3));
 set(handles.axes1,'CameraPosition',...
     [0 0 5],'CameraTarget',...
     [0 0 -5],'CameraUpVector',...
@@ -69,6 +69,9 @@ set(handles.axes1,'xlim',[-3 3],'ylim',[-3 3],'visible','off','color','none');
 
 % Choose default command line output for trackBall
 handles.output = hObject;
+
+%Set initial rot quat as global
+SetVariableGlobal_rot_quat([1;0;0;0]);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -98,7 +101,13 @@ ymouse = mousepos(1,2);
 
 if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
 
+        x_click = xmouse;
+    SetVariableGlobal_xclick(x_click);
+    y_click = ymouse;
+    SetVariableGlobal_yclick(y_click);
     set(handles.figure1,'WindowButtonMotionFcn',{@my_MouseMoveFcn,hObject});
+
+
 end
 guidata(hObject,handles)
 
@@ -116,21 +125,50 @@ mousepos=get(handles.axes1,'CurrentPoint');
 xmouse = mousepos(1,1);
 ymouse = mousepos(1,2);
 
+% -----
+i_vect = zeros(3, 1);
+f_vect = zeros(3, 1);
+
 if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     
-    converVector = zeros(3, 1);
     r = sqrt(3);
-
+    % Get the previously stored mouse position x-y
+    m_x = GetVariableGlobal_xclick;
+    m_y = GetVariableGlobal_yclick;
+   
+    %Old pos
+     if((m_x^2 + m_y^2) < 0.5 * r^2)
+        i_vect = [m_x; m_y; sqrt(r^2 - m_x^2 - m_y^2)];
+     else
+        i_vect= [m_x; m_y; (r^2) / (2 * sqrt(m_x^2 + m_y^2))]; % Apply formula
+        i_vect= (r * i_vect) / norm(i_vect); % Make sure this vector is normalized!!
+    end
+    
+    %New pos
     if xmouse^2 + ymouse^2 < 0.5 * power(r, 2)
-
-        converVector = [xmouse; ymouse; sqrt(r^2 - xmouse^2 - ymouse^2)];
+        f_vect = [xmouse; ymouse; sqrt(r^2 - xmouse^2 - ymouse^2)];
     else 
         vecModule = norm([xmouse, ymouse, (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]);
-        converVector = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
+        f_vect = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
     end
-    R = Eaa2rotMat(1, converVector);
+
+    r_axis = cross(i_vect, f_vect) / norm(cross(i_vect, f_vect)) % Get rotation axis
+    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)));
+
+    old_rotation_quaternion = GetVariableGlobal_rot_quat;
+    rotation_quaternion = [cos(r_angle/2);sin(r_angle/2)* r_axis]
+    
+    %rota_quat * old_rota_quat
+    q = rotation_quaternion;
+    p = old_rotation_quaternion;
+    
+    r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
+    norm(r_quat)
+    
+    SetVariableGlobal_rot_quat(rotation_quaternion);
+    R = rotQua2M(r_quat);
     handles.Cube = RedrawCube(R,handles);
-      
+    
 end
 guidata(hObject,handles);
 
@@ -674,3 +712,32 @@ function reset_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 R=eye(3);
 handles.Cube=RedrawCube(R,handles);
+
+
+% GLOBAL VAR UTILS
+function SetVariableGlobal_xclick(variable)
+    global xclick;
+    xclick = variable;
+    
+function r = GetVariableGlobal_xclick
+    global xclick;
+    r = xclick;
+
+function SetVariableGlobal_yclick(variable)
+    global yclick;
+    yclick = variable;
+    
+function r = GetVariableGlobal_yclick
+    global yclick;
+    r = yclick;
+    
+%Quaternion
+function SetVariableGlobal_rot_quat(variable)
+    global rot_quat;
+    rot_quat = variable;
+    
+function r = GetVariableGlobal_rot_quat
+    global rot_quat;
+    r = rot_quat;
+    
+    

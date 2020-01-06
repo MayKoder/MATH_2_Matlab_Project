@@ -1,3 +1,5 @@
+%---- Project MATVJII: Eudald Garrofe, Miquel Suau, Bernat Masip ------
+
 function varargout = trackBall(varargin)
 % TRACKBALL MATLAB code for trackBall.fig
 %      TRACKBALL, by itself, creates a new TRACKBALL or raises the existing
@@ -70,7 +72,7 @@ set(handles.axes1,'xlim',[-3 3],'ylim',[-3 3],'visible','off','color','none');
 % Choose default command line output for trackBall
 handles.output = hObject;
 
-%Global var initialitzation
+%Initiali global rotation and quaternion
 global old_quat;
 old_quat = [1;0;0;0];
 SetVariableGlobal_old_rot([1;0;0;0]);
@@ -105,10 +107,11 @@ if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
 
     set(handles.figure1,'WindowButtonMotionFcn',{@my_MouseMoveFcn,hObject});
     
-    x_click = xmouse;
-    SetVariableGlobal_xclick(x_click);
-    y_click = ymouse;
-    SetVariableGlobal_yclick(y_click);
+    %Save mouse position
+    old_mouse_pos_x = xmouse;
+    SetVariableGlobal_old_x(old_mouse_pos_x);
+    old_mouse_pos_y = ymouse;
+    SetVariableGlobal_old_y(old_mouse_pos_y);
 
 end
 guidata(hObject,handles)
@@ -117,15 +120,15 @@ function my_MouseReleaseFcn(obj,event,hObject)
 handles=guidata(hObject);
 set(handles.figure1,'WindowButtonMotionFcn','');
 
+%Global quats declaration
 global old_quat;
 global old_rot;
 
- %rota_quat * old_rota_quat
- q = old_quat;
- p = old_rot;
-    
- r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
-    
+%old_quat * old_rot quaternion multiplication
+q = old_quat;
+p = old_rot;   
+r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
+%Save current rotation on mouse release    
 SetVariableGlobal_old_rot(r_quat);
 
 guidata(hObject,handles);
@@ -139,52 +142,70 @@ mousepos=get(handles.axes1,'CurrentPoint');
 xmouse = mousepos(1,1);
 ymouse = mousepos(1,2);
 
-% -----
-i_vect = zeros(3, 1);
-f_vect = zeros(3, 1);
+% Screen to world vector init
+old_vector = zeros(3, 1);
+new_vector = zeros(3, 1);
 
 if xmouse > xlim(1) && xmouse < xlim(2) && ymouse > ylim(1) && ymouse < ylim(2)
     
+    %Radius of the sphere containing the cube (arcball)
     r = sqrt(3);
-    % Get the previously stored mouse position x-y
-    m_x = GetVariableGlobal_xclick;
-    m_y = GetVariableGlobal_yclick;
     
-    %Start calculating the next rotation-------
+    % Old mouse positions
+    old_mousex = GetVariableGlobal_old_x;
+    old_mousey = GetVariableGlobal_old_y;
+    
+    %Global quats declaration
     global old_quat;
     global old_rot;
     
-    %Old pos
-     if((m_x^2 + m_y^2) < 0.5 * r^2)
-        i_vect = [m_x; m_y; sqrt(r^2 - m_x^2 - m_y^2)];
+    %Holroyd's arcball with old position
+     if((old_mousex^2 + old_mousey^2) < 0.5 * r^2)
+         
+        z = sqrt(r^2 - old_mousex^2 - old_mousey^2);
+        old_vector = [old_mousex; old_mousey; z];
+        
      else
-        i_vect= [m_x; m_y; (r^2) / (2 * sqrt(m_x^2 + m_y^2))]; % Apply formula
-        i_vect= (r * i_vect) / norm(i_vect); % Make sure this vector is normalized!!
+         
+        z = (r^2) / (2 * sqrt(old_mousex^2 + old_mousey^2));
+        vecModule = norm([old_mousex; old_mousey; z]); 
+        old_vector= (r * [old_mousex; old_mousey; z]) / vecModule;
+        
     end
     
-    %New pos
-    if xmouse^2 + ymouse^2 < 0.5 * power(r, 2)
-        f_vect = [xmouse; ymouse; sqrt(r^2 - xmouse^2 - ymouse^2)];
+    %Holroyd's arcball with new position
+    if xmouse^2 + ymouse^2 < 0.5 * r^2
+        
+        z = sqrt(r^2 - xmouse^2 - ymouse^2);
+        new_vector = [xmouse; ymouse; z];
+        
     else 
-        vecModule = norm([xmouse, ymouse, (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]);
-        f_vect = (r * [xmouse; ymouse; (r^2 / (2*sqrt(xmouse^2 + ymouse^2)))]) / vecModule;
+        
+        z = (r^2 / (2*sqrt(xmouse^2 + ymouse^2)));
+        vecModule = norm([xmouse, ymouse, z]);
+        new_vector = (r * [xmouse; ymouse; z]) / vecModule;
+        
     end
 
-    r_axis = cross(i_vect, f_vect) / norm(cross(i_vect, f_vect)); % Get rotation axis
-    r_angle = acos((transpose(f_vect) * i_vect)/(norm(f_vect) * norm(i_vect)))
+    %Perpendicular vector of rotation
+    r_axis = cross(old_vector, new_vector) / norm(cross(old_vector, new_vector));
+    
+    %Angle of rotation
+    r_angle = acos((transpose(new_vector) * old_vector)/(norm(new_vector) * norm(old_vector)));
 
+    %Rotation quaternion creation
     rotation_quaternion = [cos(r_angle/2);sin(r_angle/2)* r_axis];
     
-    %rota_quat * old_rota_quat
+    %rota_quat * old_rota_quat quaternion multiplication
     q = rotation_quaternion;
     p = old_rot;
-    
     r_quat = [ (q(1)*p(1)) - (transpose(q(2:4))*p(2:4)); (q(1)*p(2:4)) + (p(1) * q(2:4)) + (cross(q(2:4), p(2:4)))];
     
-
-    %R = rotQua2M(r_quat);
+    
     R = rotQua2M(r_quat);
     handles.Cube = RedrawCube(R,handles);
+    
+    %Quaternion saving
     old_quat =  rotation_quaternion;
 end
 guidata(hObject,handles);
@@ -309,7 +330,6 @@ function q_1_Callback(hObject, eventdata, handles)
 % hObject    handle to q_1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_1 as text
 %        str2double(get(hObject,'String')) returns contents of q_1 as a double
 
@@ -332,7 +352,6 @@ function q_2_Callback(hObject, eventdata, handles)
 % hObject    handle to q_2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_2 as text
 %        str2double(get(hObject,'String')) returns contents of q_2 as a double
 
@@ -355,7 +374,6 @@ function q_3_Callback(hObject, eventdata, handles)
 % hObject    handle to q_3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of q_3 as text
 %        str2double(get(hObject,'String')) returns contents of q_3 as a double
 
@@ -533,7 +551,6 @@ function vec_y_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_y (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_y as text
 %        str2double(get(hObject,'String')) returns contents of vec_y as a double
 
@@ -556,7 +573,6 @@ function vec_z_Callback(hObject, eventdata, handles)
 % hObject    handle to vec_z (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of vec_z as text
 %        str2double(get(hObject,'String')) returns contents of vec_z as a double
 
@@ -586,9 +602,7 @@ vec(2)=str2double(get(handles.vec_y,'String'));
 vec(3)=str2double(get(handles.vec_z,'String'));
 
 R=rotVec2rotMat(vec);
-
 SetVariableGlobal_old_rot(rotM2Quat(R));
-
 handles.Cube=RedrawCube(R,handles);
 
 
@@ -599,7 +613,6 @@ function yaw_Callback(hObject, eventdata, handles)
 % hObject    handle to yaw (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of yaw as text
 %        str2double(get(hObject,'String')) returns contents of yaw as a double
 
@@ -622,7 +635,6 @@ function pitch_Callback(hObject, eventdata, handles)
 % hObject    handle to pitch (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of pitch as text
 %        str2double(get(hObject,'String')) returns contents of pitch as a double
 
@@ -645,7 +657,6 @@ function roll_Callback(hObject, eventdata, handles)
 % hObject    handle to roll (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of roll as text
 %        str2double(get(hObject,'String')) returns contents of roll as a double
 
@@ -732,30 +743,26 @@ SetVariableGlobal_old_rot([1;0;0;0]);
 handles.Cube=RedrawCube(R,handles);
 
 
-% GLOBAL VAR UTILS
-function SetVariableGlobal_xclick(variable)
+%---------------------Global variables------------------
+function SetVariableGlobal_old_x(variable)
     global xclick;
     xclick = variable;
     
-function r = GetVariableGlobal_xclick
+function r = GetVariableGlobal_old_x
     global xclick;
     r = xclick;
 
-function SetVariableGlobal_yclick(variable)
+function SetVariableGlobal_old_y(variable)
     global yclick;
     yclick = variable;
     
-function r = GetVariableGlobal_yclick
+function r = GetVariableGlobal_old_y
     global yclick;
     r = yclick;
   
 function SetVariableGlobal_old_rot(variable)
     global old_rot;
     old_rot = variable;
-    
-function r = GetVariableGlobal_old_rot
-    global old_rot;
-    r = old_rot;
     
     
     
